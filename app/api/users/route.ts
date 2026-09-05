@@ -3,15 +3,20 @@ import { currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function post(req: NextRequest){
+export async function POST(req: NextRequest){
     
     const user = await currentUser()
 
     // If user exist?
     if (user) {
+        const clerkEmail = user.primaryEmailAddress?.emailAddress;
+
+        if (!clerkEmail) {
+            return NextResponse.json({ message: "User email not found" }, { status: 400 });
+        }
+
         const userData = await db.select().from(users)
-        
-        .where(eq(user.primaryEmailAddress?.emailAddress, users.email))
+            .where(eq(users.email, clerkEmail));
 
         if (userData?.length > 0) {
             return NextResponse.json(userData[0]);
