@@ -1,18 +1,31 @@
 "use client"
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import { UserDetailContext } from '@/context/UserDetailContext';
+
 
 function Provider({ children }:{ children: React.ReactNode}) {
+
+    const [userDetail, setUserDetail] = useState<any>(null);
+
+    useEffect(() =>{
+      CreateNewUser();
+
+    },[])
 
     const CreateNewUser = async () => {
         const result = await axios.post('/api/users');
 
         console.log(result.data);
+        setUserDetail(result.data);
     }
   return (
-    <div>
-      { children }
-    </div>
+    <UserDetailContext.Provider value={{userDetail, setUserDetail}}>
+
+      <div>{ children }</div>
+
+    </UserDetailContext.Provider>
+    
   )
 }
 
