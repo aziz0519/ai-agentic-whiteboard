@@ -69,7 +69,9 @@ export function AppSidebar() {
             <Progress value={66} className="h-2 mt-2" />
         </div>
         <div>
-            <Image src={user?.imageUrl ?? ''} alt="User Image" width={40} height={40} className="rounded-full" />
+            {user?.imageUrl && (
+              <Image src={user.imageUrl} alt="User Image" width={40} height={40} className="rounded-full" />
+            )}
             <h2>{user?.firstName} {user?.lastName}</h2>
         </div>
       </SidebarFooter>
