@@ -1,5 +1,4 @@
 "use client"
-import { Button } from "@/components/ui/button"
 import { Progress, ProgressIndicator, ProgressValue } from "@/components/ui/progress"
 import {
   Sidebar,
@@ -13,6 +12,7 @@ import {
 import { useUser } from "@clerk/nextjs"
 import { Archive, LayoutGrid, Settings, Sparkles, Users } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 
@@ -32,21 +32,18 @@ export function AppSidebar() {
         </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-            <Button>+ Create New Board</Button>
-        </SidebarGroup>
-        <SidebarGroup>
             <SidebarGroupLabel>
                 My Boards
             </SidebarGroupLabel>
-            <SidebarMenuButton className="p-5 mt-2" isActive={path === '/dashboard'}>
+            <SidebarMenuButton render={<Link href="/dashboard" />} className="p-5 mt-2" isActive={path === '/dashboard'}>
                 <LayoutGrid />
                 <span>All Files</span>
             </SidebarMenuButton>
-            <SidebarMenuButton className="p-5 mt-2" isActive={path === "/shared-files"}>
+            <SidebarMenuButton render={<Link href="/shared-files" />} className="p-5 mt-2" isActive={path === "/shared-files"}>
                 <Users />
                 <span>Shared</span>
             </SidebarMenuButton>
-            <SidebarMenuButton className="p-5 mt-2" isActive={path === "/archive"}>
+            <SidebarMenuButton render={<Link href="/archive" />} className="p-5 mt-2" isActive={path === "/archive"}>
                 <Archive />
                 <span>Archived</span>
             </SidebarMenuButton>
@@ -55,11 +52,11 @@ export function AppSidebar() {
             <SidebarGroupLabel>
                 Others
             </SidebarGroupLabel>
-            <SidebarMenuButton className="p-5 mt-2" isActive={path === '/ai'}>
+            <SidebarMenuButton render={<Link href="/ai" />} className="p-5 mt-2" isActive={path === '/ai'}>
                 <Sparkles />
                 <span>AI Helper</span>
             </SidebarMenuButton>
-              <SidebarMenuButton className="p-5 mt-2" isActive={path === '/settings'}>
+              <SidebarMenuButton render={<Link href="/settings" />} className="p-5 mt-2" isActive={path === '/settings'}>
                 <Settings />
                 <span>Settings</span>
             </SidebarMenuButton>
@@ -67,7 +64,6 @@ export function AppSidebar() {
 
       </SidebarContent>
       <SidebarFooter>
-        <Button>+ Create New Board</Button>
         <div className="p-4 my-3 border rounded-md">
             <h2 className="text-sm flex justify-between mb-1">2 files created</h2>
             <Progress value={66} className="h-2 mt-2" />
