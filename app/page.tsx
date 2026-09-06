@@ -42,17 +42,10 @@ export default function Home() {
         </div>
       </section>
 
-      <footer style={styles.footer}>
-        Created with <span style={{ color: '#ec4899' }}>♥</span> by{' '}
-        <a
-          href="https://www.youtube.com/@tubeguruji"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#71717a', textDecoration: 'underline', transition: 'color 0.2s' }}
-        >
-          Tubeguruji
-        </a>
+      <footer>
+        <h4>End of Page</h4>
       </footer>
+
     </main>
   );
 }
