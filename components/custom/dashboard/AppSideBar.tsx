@@ -9,11 +9,12 @@ import {
   SidebarHeader,
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
-import { useUser } from "@clerk/nextjs"
+import { CreateOrganization, useUser } from "@clerk/nextjs"
 import { Archive, LayoutGrid, Settings, Sparkles, Users } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import CreateNewBoardDialog from "./CreateNewBoardDialog"
 
 
  
@@ -31,6 +32,9 @@ export function AppSidebar() {
         </div>
         </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+            <CreateNewBoardDialog />
+        </SidebarGroup>
         <SidebarGroup>
             <SidebarGroupLabel>
                 My Boards
@@ -64,13 +68,14 @@ export function AppSidebar() {
 
       </SidebarContent>
       <SidebarFooter>
+        <CreateNewBoardDialog />
         <div className="p-4 my-3 border rounded-md">
             <h2 className="text-sm flex justify-between mb-1">2 files created</h2>
             <Progress value={66} className="h-2 mt-2" />
         </div>
-        <div>
+        <div className="flex items-center gap-2 p-4 border rounded-md">
             {user?.imageUrl && (
-              <Image src={user.imageUrl} alt="User Image" width={40} height={40} className="rounded-full" />
+              <Image src={user?.imageUrl ?? ''} alt="User Image" width={40} height={40} className="rounded-full" />
             )}
             <h2>{user?.firstName} {user?.lastName}</h2>
         </div>
