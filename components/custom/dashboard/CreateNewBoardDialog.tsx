@@ -32,18 +32,21 @@ function CreateNewBoardDialog() {
         return;
     }
         setLoading(true);
-        const projectId = crypto.randomUUID();
-        const result = await axios.post('/api/projects',{
-            projectName: workspaceName,
-            projectId: projectId 
-        })
+        try {
+            const projectId = crypto.randomUUID();
+            const result = await axios.post('/api/projects',{
+                projectName: workspaceName,
+                projectId: projectId 
+            })
 
-        console.log(result?.data);
-        toast.add({
-            type:'success',
-            title:'New Workspace Created'
-        })
-        setLoading(false);
+            console.log(result?.data);
+            toast.add({
+                type:'success',
+                title:'New Workspace Created'
+            })
+        } finally {
+            setLoading(false);
+        }
   }
 
   return (
