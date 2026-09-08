@@ -10,15 +10,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Loader, Loader2, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/toast'
+import axios from 'axios'
 
 function CreateNewBoardDialog() {
 
   const [workspaceName, setWorkspaceName] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleCreateBoard=()=>{
+  const handleCreateBoard= async ()=>{
     if (workspaceName.trim() === ""  || workspaceName?.length > 30){
 
         toast.add({
@@ -27,15 +29,31 @@ function CreateNewBoardDialog() {
             description: "Please enter a valid workspace name (1-30 characters)."
         })
 
-
+        return;
     }
+        setLoading(true);
+        try {
+            const projectId = crypto.randomUUID();
+            const result = await axios.post('/api/projects',{
+                projectName: workspaceName,
+                projectId: projectId 
+            })
+
+            console.log(result?.data);
+            toast.add({
+                type:'success',
+                title:'New Workspace Created'
+            })
+        } finally {
+            setLoading(false);
+        }
   }
 
   return (
         <Dialog>
         <DialogTrigger>
             <Button className="w-full">
-                <Plus /> Create New Board
+                <Plus />Create New Board
             </Button>
         </DialogTrigger>
         <DialogContent>
@@ -52,8 +70,10 @@ function CreateNewBoardDialog() {
                 <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
-            disabled={workspaceName?.length == 0} 
-            onClick={handleCreateBoard}>Create</Button>
+            disabled={workspaceName?.length == 0 || loading} 
+            onClick={handleCreateBoard}>
+            {loading&&<Loader2 className='animate-spin'/>}Create
+            </Button>
         </DialogFooter>
         </DialogContent>
       
