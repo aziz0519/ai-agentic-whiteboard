@@ -14,11 +14,17 @@ import { Loader, Loader2, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/toast'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { profileEnd } from 'console'
+
 
 function CreateNewBoardDialog() {
 
   const [workspaceName, setWorkspaceName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dialog, setDialog] = useState(false);
+  const route = useRouter();
+  const projectId = crypto.randomUUID();
 
   const handleCreateBoard= async ()=>{
     if (workspaceName.trim() === ""  || workspaceName?.length > 30){
@@ -33,7 +39,6 @@ function CreateNewBoardDialog() {
     }
         setLoading(true);
         try {
-            const projectId = crypto.randomUUID();
             const result = await axios.post('/api/projects',{
                 projectName: workspaceName,
                 projectId: projectId 
@@ -46,11 +51,13 @@ function CreateNewBoardDialog() {
             })
         } finally {
             setLoading(false);
+            setDialog(false);
+            route.push('/workspace/' + projectId)
         }
   }
 
   return (
-        <Dialog>
+        <Dialog open={dialog} onOpenChange={setDialog}>
         <DialogTrigger>
             <Button className="w-full">
                 <Plus />Create New Board
@@ -81,4 +88,4 @@ function CreateNewBoardDialog() {
   )
 }
 
-export default CreateNewBoardDialog
+export default CreateNewBoardDialog;
