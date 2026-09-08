@@ -10,15 +10,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button'
-import { Loader, Loader2, Plus } from 'lucide-react'
+import { Loader2, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/toast'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
+
 
 function CreateNewBoardDialog() {
 
   const [workspaceName, setWorkspaceName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dialog, setDialog] = useState(false);
+  const route = useRouter();
+  const projectId = crypto.randomUUID();
 
   const handleCreateBoard= async ()=>{
     if (workspaceName.trim() === ""  || workspaceName?.length > 30){
@@ -33,7 +38,6 @@ function CreateNewBoardDialog() {
     }
         setLoading(true);
         try {
-            const projectId = crypto.randomUUID();
             const result = await axios.post('/api/projects',{
                 projectName: workspaceName,
                 projectId: projectId 
@@ -44,13 +48,21 @@ function CreateNewBoardDialog() {
                 type:'success',
                 title:'New Workspace Created'
             })
+            setDialog(false);
+            route.push('/workspace/' + projectId)
+        } catch {
+            toast.add({
+                type:'error',
+                title:'Workspace Creation Failed',
+                description:'Unable to create the workspace. Please try again.'
+            })
         } finally {
             setLoading(false);
         }
   }
 
   return (
-        <Dialog>
+        <Dialog open={dialog} onOpenChange={setDialog}>
         <DialogTrigger>
             <Button className="w-full">
                 <Plus />Create New Board
@@ -81,4 +93,4 @@ function CreateNewBoardDialog() {
   )
 }
 
-export default CreateNewBoardDialog
+export default CreateNewBoardDialog;

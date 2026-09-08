@@ -9,7 +9,8 @@
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -38,14 +39,18 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^20.14.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.10",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.16.0",
     "eslint-config-next": "^16.2.6",
+    "jsdom": "^29.1.1",
     "shadcn": "^4.21.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.11"
   }
 }
