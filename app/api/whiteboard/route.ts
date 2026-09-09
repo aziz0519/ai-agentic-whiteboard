@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
 
     if (projectId)
     {
+        try{
         const projectResult = await db.select({
             projectId: projects.projectId,
             userEmail: projects.userEmail
@@ -45,6 +46,13 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(result);
     }
+    catch (e)
+ {
+
+    return NextResponse.json('Internal Server Error!')
+
+ }    
+}
 
     return NextResponse.json('Project Information Missing')
 }
