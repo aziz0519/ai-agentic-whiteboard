@@ -1,6 +1,7 @@
-import { db, whiteboardData } from "@/db";
+import { db, projects, whiteboardData } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { profileEnd } from "console";
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -14,6 +15,20 @@ export async function POST(req: NextRequest) {
 
     if (projectId)
     {
+        const projectResult = await db.select({
+            projectId: projects.projectId,
+            userEmail: projects.userEmail
+        }).from(projects).where(eq(projects.projectId, projectId)).limit(1);
+        const project = projectResult[0];
+
+        if (!project) {
+            return NextResponse.json('Project Not Found', { status: 404 });
+        }
+
+        if (project.userEmail !== user.primaryEmailAddress?.emailAddress) {
+            return NextResponse.json('Forbidden', { status: 403 });
+        }
+
         const result = await db.insert(whiteboardData).values({
             projectId: projectId,
             elements: elements,

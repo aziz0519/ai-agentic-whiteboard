@@ -19,7 +19,7 @@ export const projects = pgTable('projects', {
 
 export const whiteboardData = pgTable('whiteboard',{
   id: serial("id").primaryKey(),
-  projectId: varchar("projectId").references(()=>projects.projectId),
+  projectId: varchar("projectId").notNull().unique().references(()=>projects.projectId),
   elements:jsonb('elements'),
   appState:jsonb('appState'),
   files:jsonb('files'),

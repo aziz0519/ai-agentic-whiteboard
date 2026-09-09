@@ -26,11 +26,20 @@ function Whiteboard() {
 
     }
     saveTimeRef.current=setTimeout(() => {
-      saveCanvasChanges(elements, appState, files);
-      toast.add({
-        title:'Changes Saved!',
-        type:'success'
-      })
+      void (async () => {
+        try {
+          await saveCanvasChanges(elements, appState, files);
+          toast.add({
+            title:'Changes Saved!',
+            type:'success'
+          })
+        } catch {
+          toast.add({
+            title:'Failed to save changes',
+            type:'error'
+          })
+        }
+      })();
 
     },10000)
   };
@@ -42,6 +51,8 @@ function Whiteboard() {
         appState:appState,
         files:files,
         projectId:projectid
+    }, {
+      validateStatus: (status) => status >= 200 && status < 300
     });
 
   }
