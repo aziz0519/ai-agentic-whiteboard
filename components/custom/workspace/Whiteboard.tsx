@@ -1,7 +1,10 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import dynamic from "next/dynamic"
 import "@excalidraw/excalidraw/index.css"
+import axios from 'axios'
+import { useParams } from 'next/navigation'
+import { toast } from '@/components/ui/toast'
 
 const Excalidraw = dynamic(
   () => import("@excalidraw/excalidraw").then((module) => module.Excalidraw),
@@ -11,9 +14,37 @@ const Excalidraw = dynamic(
 function Whiteboard() {
 
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
-  const handleCanvasChange =(elements:readonly any[], appState:any)=>{
-    console.log(appState);
+  const saveTimeRef=useRef<any>(null);
+  const {projectid} = useParams();
+
+  const handleCanvasChange =(elements:readonly any[], appState:any, files:any)=>{
+    //Cancel Prev Time
+    if (saveTimeRef?.current)
+    {
+
+      clearTimeout(saveTimeRef.current)
+
+    }
+    saveTimeRef.current=setTimeout(() => {
+      saveCanvasChanges(elements, appState, files);
+      toast.add({
+        title:'Changes Saved!',
+        type:'success'
+      })
+
+    },10000)
   };
+
+  const saveCanvasChanges = async (elements:readonly any[], appState:any, files:any) => {
+
+    const result = await axios.post('/api/whiteboard',{
+        elements:elements,
+        appState:appState,
+        files:files,
+        projectId:projectid
+    });
+
+  }
 
   return (
     <div style={{height: "90vh"}}>
