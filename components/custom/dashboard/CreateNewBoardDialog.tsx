@@ -63,10 +63,8 @@ function CreateNewBoardDialog() {
 
   return (
         <Dialog open={dialog} onOpenChange={setDialog}>
-        <DialogTrigger>
-            <Button className="w-full">
+        <DialogTrigger render={<Button className="w-full" />}>
                 <Plus />Create New Board
-            </Button>
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
@@ -78,9 +76,7 @@ function CreateNewBoardDialog() {
                 onChange={(e) => setWorkspaceName(e.target.value)} />
             </div>
               <DialogFooter>
-            <DialogClose>
-                <Button variant="outline">Cancel</Button>
-            </DialogClose>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
             <Button
             disabled={workspaceName?.length == 0 || loading} 
             onClick={handleCreateBoard}>

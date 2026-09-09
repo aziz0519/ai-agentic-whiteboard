@@ -30,7 +30,7 @@ describe("CreateNewBoardDialog", () => {
   it("does not navigate when workspace creation fails", async () => {
     render(<CreateNewBoardDialog />)
 
-    fireEvent.click(screen.getAllByRole("button", { name: /create new board/i })[1])
+    fireEvent.click(screen.getByRole("button", { name: /create new board/i }))
     fireEvent.change(await screen.findByPlaceholderText("Workspace Name"), {
       target: { value: "Failed Workspace" },
     })
