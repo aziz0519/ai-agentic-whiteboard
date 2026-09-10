@@ -89,21 +89,20 @@ function Whiteboard() {
 
     }
     saveTimeRef.current=setTimeout(() => {
-      // void (async () => {
-      //   try {
-      //     await saveCanvasChanges(elements, appState, files);
-      //     toast.add({
-      //       title:'Changes Saved!',
-      //       type:'success'
-      //     })
-      //   } catch {
-      //     toast.add({
-      //       title:'Failed to save changes',
-      //       type:'error'
-      //     })
-      //   }
-      // })();
-
+      void (async () => {
+        try {
+          await saveCanvasChanges(elements, appState, files);
+          toast.add({
+            title:'Changes Saved!',
+            type:'success'
+          })
+        } catch {
+          toast.add({
+            title:'Failed to save changes',
+            type:'error'
+          })
+        }
+      })();
     },10000)
   };
 
@@ -144,7 +143,10 @@ function Whiteboard() {
            return (
             <button className={`flex h-10 w-10 items-center justify-center 
             rounded-xl transition hover:bg-primary/10 hover:cursor-pointer 
-            ${activeTool==tool.name ? "bg-primary/10": null}`} onClick={()=>changeTool(tool.name)}>
+            ${activeTool==tool.name ? "bg-primary/10": null}`} 
+            aria-label={tool.name}
+            aria-pressed={activeTool === tool.name}
+            onClick={()=>changeTool(tool.name)}>
                 <Icon size='19' className={tool.color} />
             </button>
            )
