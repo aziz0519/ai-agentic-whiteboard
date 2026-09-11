@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/toast'
 import './whiteboard.css'
 import { ArrowRight, Circle, Diamond, Eraser, Hand, Image, Minus, MousePointer2, Pencil, Square, Type } from 'lucide-react'
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
+import FloatingProperties from './FloatingProperties'
 
 
 const tools = [
@@ -79,8 +80,26 @@ function Whiteboard() {
   const saveTimeRef=useRef<any>(null);
   const {projectid} = useParams();
   const [activeTool, setActiveTool] = useState('selection');
+  const [selectedElement, setSelectedElement] = useState<any>(null);
+  const [canvasState, setCanvasState] = useState<any>(null);
 
   const handleCanvasChange =(elements:readonly any[], appState:any, files:any)=>{
+
+    setCanvasState(appState);
+    
+    const selectedIds = Object.keys(
+      appState.selectedElementsIds || {}
+    )
+
+    if (selectedIds?.length==1) {
+      const element = elements.find(
+        (element)=>element.id==selectedIds[0]
+      )
+      setSelectedElement(element);
+    } else {
+       setSelectedElement(null);
+    }
+
     //Cancel Prev Time
     if (saveTimeRef?.current)
     {
@@ -127,7 +146,35 @@ function Whiteboard() {
       type:tool
     })
 
-  } 
+  }
+  
+  const getFloatingPosition=() => {
+    if(!selectedElement || !canvasState)
+    {
+      return {left:0,top:0}
+    }
+
+    const zoom = canvasState.zoom?.value ?? 1
+
+    const scrollX = canvasState.scrollX?.value ?? 0
+
+    const scrollY = canvasState.scrollY?.value ?? 0
+
+    const centerX = selectedElement.x + selectedElement.width / 2
+
+    const screenX = (centerX + scrollX) * zoom 
+
+    const screenY = (selectedElement.y + scrollY) * zoom
+
+    return {
+      left : screenX,
+      top: screenY - 60
+    }
+
+  }
+
+  const floatingPostion = getFloatingPosition();
+  console.log(floatingPostion);
 
   return (
     <div style={{height: "90vh"}}>
@@ -153,6 +200,9 @@ function Whiteboard() {
         })}
 
       </div>
+      <FloatingProperties 
+      selectedElement={selectedElement} 
+      position={floatingPostion} />
     </div>
   )
 }
