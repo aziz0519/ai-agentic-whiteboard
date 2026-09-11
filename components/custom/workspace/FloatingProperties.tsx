@@ -12,6 +12,10 @@ type Props = {
 
 }
 
+/**
+ * Displays the selected element's type and palette button at an absolute
+ * position, or renders nothing when there is no selected element.
+ */
 function FloatingProperties({ selectedElement, position}: Props) {
 
   if (!selectedElement) return null;
