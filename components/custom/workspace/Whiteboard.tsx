@@ -74,6 +74,10 @@ const Excalidraw = dynamic(
   { ssr: false }
 )
 
+/**
+ * Renders the Excalidraw canvas with tool selection, debounced persistence,
+ * and a contextual toolbar for a single selected element.
+ */
 function Whiteboard() {
 
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI|null>(null);
@@ -83,6 +87,10 @@ function Whiteboard() {
   const [selectedElement, setSelectedElement] = useState<any>(null);
   const [canvasState, setCanvasState] = useState<any>(null);
 
+  /**
+   * Tracks a sole selected element and schedules the latest canvas state to be
+   * saved after ten seconds without another change.
+   */
   const handleCanvasChange =(elements:readonly any[], appState:any, files:any)=>{
 
     setCanvasState(appState);
@@ -148,6 +156,11 @@ function Whiteboard() {
 
   }
   
+  /**
+   * Locates the point 60 pixels above the selected element's top center after
+   * applying the canvas scroll offsets and zoom. Falls back to the origin until
+   * both the selection and canvas state are available.
+   */
   const getFloatingPosition=() => {
     if(!selectedElement || !canvasState)
     {
