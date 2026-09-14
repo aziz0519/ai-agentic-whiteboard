@@ -31,7 +31,7 @@ function FloatingProperties({ selectedElement, position}: Props) {
 
 
   return (
-    <div className='absolute z-[100] flex -translate-x-1/2 items-center gap-1' style={{
+    <div className='absolute z-100 flex -translate-x-1/2 items-center gap-1' style={{
         left: position.left,
         top: position.top, 
     }}>
