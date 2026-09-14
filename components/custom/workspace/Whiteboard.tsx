@@ -9,6 +9,9 @@ import './whiteboard.css'
 import { ArrowRight, Circle, Diamond, Eraser, Hand, Image, Minus, MousePointer2, Pencil, Square, Type } from 'lucide-react'
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 import FloatingProperties from './FloatingProperties'
+import { version } from 'os'
+import { except } from 'drizzle-orm/gel-core'
+
 
 
 const tools = [
@@ -186,8 +189,109 @@ function Whiteboard() {
 
   }
 
+  const handlePropertyChange=(property:string, value:any)=>{
+    if (!excalidrawAPI || !selectedElement) return ;
+
+    const element =excalidrawAPI.getSceneElements();
+    const updatedElement = element.map((element)=>{
+       if(element.id!=selectedElement.id)
+      {
+        return element;
+      }
+      return {
+      ...element,
+      [property]:value,
+      version: element.version+1,
+      updated: Date.now()
+      }
+    });
+
+    excalidrawAPI.updateScene({
+      elements:updatedElement
+    })
+
+
+  }
+
+  const handleDeleteElement=()=>{
+    if (!excalidrawAPI || !selectedElement) return ;
+
+      const elements = excalidrawAPI.getSceneElements();
+      const updatedElements = elements.map((element)=>{
+        if(element.id===selectedElement.id)
+        {
+          return {
+            ...element,
+            isDeleted:true,
+            version: element.version + 1,
+            updated: Date.now()
+          }
+        }
+        return element
+
+      })
+        excalidrawAPI.updateScene({
+      elements:updatedElements
+    })
+
+    setSelectedElement(null);
+
+  }
+
+  const handleOnDuplicate=()=>{
+    if (!excalidrawAPI || !selectedElement) return ;
+
+    const elements = excalidrawAPI.getSceneElements();
+    const duplicateElement = {
+      ...selectedElement,
+      id: crypto.randomUUID(),
+      x: selectedElement.x + 20,
+      y: selectedElement.y + 20,
+      seed: Math.floor(Math.random()*100000),
+      version:1,
+      updated:Date.now(),
+      isDeleted:false,
+    };
+    excalidrawAPI.updateScene({
+      elements:[
+        ...elements,
+        duplicateElement
+      ]
+    })
+ 
+  }
+
+  const handleBringFrontBack=(type:string)=>{
+    if (!excalidrawAPI || !selectedElement) return ;
+
+    const elements = excalidrawAPI.getSceneElements();
+
+    const selected = elements.find((element)=>element.id===selectedElement.id);
+
+      if(!selected) return ;
+      const remainingElements = elements.filter((element)=>element.id!==selectedElement.id);
+
+      if(type == 'front') {
+        excalidrawAPI.updateScene({
+          elements:[
+            ...remainingElements,
+            selected
+
+          ]
+        })
+      } else {
+         excalidrawAPI.updateScene({
+          elements:[
+            selected,
+            ...remainingElements,
+          ]
+        })
+      }
+
+  } 
+
   const floatingPostion = getFloatingPosition();
-  console.log(floatingPostion);
+
 
   return (
     <div style={{height: "90vh"}}>
@@ -215,7 +319,13 @@ function Whiteboard() {
       </div>
       <FloatingProperties 
       selectedElement={selectedElement} 
-      position={floatingPostion} />
+      position={floatingPostion}
+      onPropertyChange={(property, value)=>handlePropertyChange(property, value)}
+      onDelete={()=>handleDeleteElement()}
+      onDuplicate={()=>handleOnDuplicate()}
+      onBringToFront={()=>handleBringFrontBack("front")}
+      onSendToBack={()=>handleBringFrontBack("back")} 
+      />
     </div>
   )
 }
