@@ -1,7 +1,6 @@
 "use client"
 import { Separator } from '@/components/ui/separator'
-import { ToolbarButton } from '@base-ui/react'
-import { Circle, Diamond, Palette, Square, Type } from 'lucide-react'
+import { BringToFront, Circle, Copy, Diamond, Lock, Palette, SendToBack, Square, Trash2, Type } from 'lucide-react'
 import React, { useState } from 'react'
 
 
@@ -26,7 +25,7 @@ type Props = {
 
 const COLORS = [
   "#1e1e1e",
-  "e313131"
+  "#e31313"
 ]
 
 /**
@@ -58,6 +57,20 @@ function FloatingProperties({ selectedElement, position,
   const isArrow = type === "arrow";
   const isFreeDraw = type === "freedraw"; 
 
+  const toggleColor = () => {
+    const currentColorIndex = COLORS.indexOf(selectedElement.strokeColor);
+    const nextColor = COLORS[(currentColorIndex + 1) % COLORS.length];
+    onPropertyChange?.("strokeColor", nextColor);
+  };
+
+  const toggleFont = () => {
+    onPropertyChange?.("fontFamily", selectedElement.fontFamily === 1 ? 2 : 1);
+  };
+
+  const increaseFontSize = () => {
+    onPropertyChange?.("fontSize", (selectedElement.fontSize || 20) + 2);
+  };
+
 
   return (
     <div className='absolute z-100 flex -translate-x-1/2 items-center gap-1' style={{
@@ -82,7 +95,11 @@ function FloatingProperties({ selectedElement, position,
    
 
       {/* COMMON PROPERTY */}
-      <button className='flex h-9 v-9 items-center justify-center rounded-xl'>
+      <button
+        className='flex h-9 v-9 items-center justify-center rounded-xl'
+        aria-label='Change color'
+        onClick={toggleColor}
+      >
         <Palette size={18} />
       </button>
 
@@ -91,10 +108,10 @@ function FloatingProperties({ selectedElement, position,
        {isText && (
           <>
             <Separator />
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={toggleFont}>
               Font
             </button>
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={increaseFontSize}>
               {selectedElement.fontSize || 20}px
 
             </button>
@@ -106,10 +123,10 @@ function FloatingProperties({ selectedElement, position,
        {isLine && (
           <>
             <Separator />
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={toggleFont}>
               Font
             </button>
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={increaseFontSize}>
               {selectedElement.fontSize || 20}px
 
             </button>
@@ -121,10 +138,10 @@ function FloatingProperties({ selectedElement, position,
        {isArrow && (
           <>
             <Separator />
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={toggleFont}>
               Font
             </button>
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={increaseFontSize}>
               {selectedElement.fontSize || 20}px
 
             </button>
@@ -136,17 +153,32 @@ function FloatingProperties({ selectedElement, position,
        {isFreeDraw && (
           <>
             <Separator />
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={toggleFont}>
               Font
             </button>
-            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50'>
+            <button className='h-9 rounded-lg px-3 text-sm hover:bg-green-50' onClick={increaseFontSize}>
               {selectedElement.fontSize || 20}px
 
             </button>
           </>
        )}
 
-
+      <Separator />
+      <button className='flex h-9 w-9 items-center justify-center rounded-xl hover:bg-green-50' aria-label='Delete' onClick={onDelete}>
+        <Trash2 size={17} />
+      </button>
+      <button className='flex h-9 w-9 items-center justify-center rounded-xl hover:bg-green-50' aria-label='Duplicate' onClick={onDuplicate}>
+        <Copy size={17} />
+      </button>
+      <button className='flex h-9 w-9 items-center justify-center rounded-xl hover:bg-green-50' aria-label='Lock' onClick={onLock}>
+        <Lock size={17} />
+      </button>
+      <button className='flex h-9 w-9 items-center justify-center rounded-xl hover:bg-green-50' aria-label='Bring to front' onClick={onBringToFront}>
+        <BringToFront size={17} />
+      </button>
+      <button className='flex h-9 w-9 items-center justify-center rounded-xl hover:bg-green-50' aria-label='Send to back' onClick={onSendToBack}>
+        <SendToBack size={17} />
+      </button>
 
 
 
