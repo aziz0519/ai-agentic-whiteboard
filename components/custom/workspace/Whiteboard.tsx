@@ -6,11 +6,13 @@ import axios from 'axios'
 import { useParams } from 'next/navigation'
 import { toast } from '@/components/ui/toast'
 import './whiteboard.css'
-import { ArrowRight, Circle, Diamond, Eraser, Hand, Image, Minus, MousePointer2, Pencil, Square, Type } from 'lucide-react'
+import { ArrowRight, Circle, Diamond, Eraser, Hand, Image, Minus, MousePointer2, Pencil, Sparkle, Square, Type } from 'lucide-react'
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 import FloatingProperties from './FloatingProperties'
 import { version } from 'os'
 import { except } from 'drizzle-orm/gel-core'
+import { Button } from '@/components/ui/button'
+import AIFloatingSidebar from './AIFloatingSidebar'
 
 
 
@@ -89,6 +91,7 @@ function Whiteboard() {
   const [activeTool, setActiveTool] = useState('selection');
   const [selectedElement, setSelectedElement] = useState<any>(null);
   const [canvasState, setCanvasState] = useState<any>(null);
+  const [showAISidebar, setShowAISidebar] = useState(true);
 
   /**
    * Tracks a sole selected element and schedules the latest canvas state to be
@@ -326,6 +329,12 @@ function Whiteboard() {
       onBringToFront={()=>handleBringFrontBack("front")}
       onSendToBack={()=>handleBringFrontBack("back")} 
       />
+      <div className='absolute right-15 bottom-3 z-50'>
+        <Button size={'lg'} onClick={()=>setShowAISidebar(!showAISidebar)}>
+          <Sparkle /> AI
+        </Button>
+      </div>
+       {showAISidebar && <AIFloatingSidebar />}
     </div>
   )
 }
