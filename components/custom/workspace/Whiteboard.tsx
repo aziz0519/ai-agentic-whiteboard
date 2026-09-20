@@ -91,7 +91,7 @@ function Whiteboard() {
   const [activeTool, setActiveTool] = useState('selection');
   const [selectedElement, setSelectedElement] = useState<any>(null);
   const [canvasState, setCanvasState] = useState<any>(null);
-  const [showAISidebar, setShowAISidebar] = useState(false);
+  const [showAISidebar, setShowAISidebar] = useState(true);
 
   /**
    * Tracks a sole selected element and schedules the latest canvas state to be
