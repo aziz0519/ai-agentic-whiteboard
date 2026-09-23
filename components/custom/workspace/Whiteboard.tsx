@@ -334,7 +334,7 @@ function Whiteboard() {
           <Sparkle /> AI
         </Button>
       </div>
-       {showAISidebar && <AIFloatingSidebar />}
+       {showAISidebar && <AIFloatingSidebar excalidrawApi={excalidrawAPI} />}
     </div>
   )
 }
