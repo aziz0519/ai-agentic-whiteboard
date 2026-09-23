@@ -96,6 +96,7 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
           </div>
 
           <button
+            aria-label="Close AI assistant"
             className="
               flex h-8 w-8 items-center justify-center
               rounded-lg
@@ -212,6 +213,7 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
           />
 
           <Button
+            aria-label="Generate from prompt"
             className="
               absolute
               bottom-2.5
