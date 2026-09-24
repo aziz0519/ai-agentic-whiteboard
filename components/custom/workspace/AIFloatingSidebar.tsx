@@ -1,6 +1,7 @@
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@base-ui/react'
-import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
+import { convertToExcalidrawElements } from '@excalidraw/excalidraw'
+import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 import {
   Monitor,
   Network,
@@ -11,13 +12,16 @@ import {
   X,
   ArrowUp
 } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 
 type Props={
   excalidrawApi:ExcalidrawImperativeAPI | null
+  onDismiss: () => void
 }
 
-function AIFloatingSidebar({excalidrawApi}:Props) {
+function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
+  const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
+  const AI_PLACEHOLDER_ID ='ai-generation-placeholder';
   const AiTools = [
     {
       name: 'Generate Diagram',
@@ -55,6 +59,82 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
       iconBg: 'bg-pink-50',
     },
   ]
+
+  const getEmptyCanvasPosition = () =>{
+    if(!excalidrawApi)
+    {
+      return {x:100,y:100}
+    }
+
+    const elements = excalidrawApi.getSceneElements().filter(element=>!element.isDeleted)
+
+    if(elements.length==0)
+    {
+      return {x:100,y:100}
+    }
+
+    const maxRight=Math.max(...elements.map((element)=>element.x+element.width))
+    const minTop=Math.min(...elements.map((element)=>element.y))
+
+    return {
+      x:maxRight + 150,
+      y:minTop
+    }
+  }
+
+  const addAiPlaceholder =() =>{
+    if(!excalidrawApi) return ;
+
+    const position=getEmptyCanvasPosition();
+
+    const placeholderElements=convertToExcalidrawElements([
+      {
+        type:'rectangle',
+        id: AI_PLACEHOLDER_ID,
+        x: position.x,
+        y: position.y,
+        width:420,
+        height:250,
+        backgroundColor:'#f5f3ff',
+        strokeColor:'#8b5cf6',
+        fillStyle:"solid",
+        strokeWidth: 2,
+        roughness: 0,
+        roundness: {
+          type: 3
+        }
+      },
+      {
+        type:"text",
+        x:position.x + 28,
+        y:position.y + 28,
+        text:"Generating with AI",
+        fontSize: 22,
+        strokeColor:'#6d28d9'
+      },
+      {
+        type:"text",
+        x:position.x + 28,
+        y:position.y + 65,
+        text: "Preparing your diagram...",
+        fontSize: 15,
+        strokeColor: "#6b7280"
+
+      }
+    ])
+    const currentElements = excalidrawApi.getSceneElements();
+
+    excalidrawApi.updateScene({
+      elements:[
+        ...currentElements,
+        ...placeholderElements
+      ]
+    })
+  }
+
+  const onClickGenerate=()=>{
+    addAiPlaceholder();
+  }
 
   return (
     <div
@@ -97,6 +177,7 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
 
           <button
             aria-label="Close AI assistant"
+            onClick={onDismiss}
             className="
               flex h-8 w-8 items-center justify-center
               rounded-lg
@@ -213,7 +294,6 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
           />
 
           <Button
-            aria-label="Generate from prompt"
             className="
               absolute
               bottom-2.5
@@ -229,8 +309,9 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
               hover:bg-gray-800
               disabled:opacity-50
             "
-          >
-            <ArrowUp size={15} />
+            onClick={onClickGenerate}
+          > Generate
+            <ArrowUp size={14} />
           </Button>
         </div>
 
