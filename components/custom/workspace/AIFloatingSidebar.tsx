@@ -1,7 +1,7 @@
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@base-ui/react'
-import { convertToExcalidrawElements } from '@excalidraw/excalidraw/index'
-import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
+import { convertToExcalidrawElements } from '@excalidraw/excalidraw'
+import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 import {
   Monitor,
   Network,
@@ -16,9 +16,10 @@ import React, { useState } from 'react'
 
 type Props={
   excalidrawApi:ExcalidrawImperativeAPI | null
+  onDismiss: () => void
 }
 
-function AIFloatingSidebar({excalidrawApi}:Props) {
+function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
   const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
   const AI_PLACEHOLDER_ID ='ai-generation-placeholder';
   const AiTools = [
@@ -102,6 +103,23 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
         roundness: {
           type: 3
         }
+      },
+      {
+        type:"text",
+        x:position.x + 28,
+        y:position.y + 28,
+        text:"Generating with AI",
+        fontSize: 22,
+        strokeColor:'#6d28d9'
+      },
+      {
+        type:"text",
+        x:position.x + 28,
+        y:position.y + 65,
+        text: "Preparing your diagram...",
+        fontSize: 15,
+        strokeColor: "#6b7280"
+
       }
     ])
     const currentElements = excalidrawApi.getSceneElements();
@@ -159,6 +177,7 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
 
           <button
             aria-label="Close AI assistant"
+            onClick={onDismiss}
             className="
               flex h-8 w-8 items-center justify-center
               rounded-lg
@@ -168,7 +187,7 @@ function AIFloatingSidebar({excalidrawApi}:Props) {
               hover:text-gray-700
             "
           >
-            <X size={17} onClick={close} />
+            <X size={17} />
           </button>
         </div>
       </div>

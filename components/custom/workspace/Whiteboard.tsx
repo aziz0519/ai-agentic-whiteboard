@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation'
 import { toast } from '@/components/ui/toast'
 import './whiteboard.css'
 import { ArrowRight, Circle, Diamond, Eraser, Hand, Image, Minus, MousePointer2, Pencil, Sparkle, Square, Type } from 'lucide-react'
-import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
+import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 import FloatingProperties from './FloatingProperties'
 import { version } from 'os'
 import { except } from 'drizzle-orm/gel-core'
@@ -334,7 +334,12 @@ function Whiteboard() {
           <Sparkle /> AI
         </Button>
       </div>
-       {showAISidebar && <AIFloatingSidebar excalidrawApi={excalidrawAPI} />}
+      {showAISidebar && (
+       <AIFloatingSidebar
+       excalidrawApi={excalidrawAPI}
+       onDismiss={() => setShowAISidebar(false)}
+       />
+      )}
     </div>
   )
 }
