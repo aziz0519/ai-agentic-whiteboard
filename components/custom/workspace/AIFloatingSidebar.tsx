@@ -62,7 +62,18 @@ const AiTools = [
       icon: Network,
       iconColor: 'text-orange-600',
       iconBg: 'bg-orange-50',
-      prompt: ``
+      prompt: `
+      You are a senior software architect and system design visualization agent.
+      Convert the user's application or system description into a clear architecture diagram.
+      Instructions:
+      - Identify clients, frontend applications, backend services, APIs, databases, queues, storage and infrastructure.
+      - Group related components into logical sections.
+      - Show the direction of data flow using arrows.
+      - Clearly label important connections when useful.
+      - Place users or client applications on the left or top.
+      - Place application services in the center.
+      - Place databases, storage and infrastructure on the right or bottom.
+      `
     },
     {
       name: 'Web Mockup',
@@ -84,7 +95,6 @@ const AiTools = [
 
 function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
   const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
-  const AI_PLACEHOLDER_ID ='ai-generation-placeholder';
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -110,72 +120,78 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     }
   }
 
-  const addAiPlaceholder =() =>{
-    if(!excalidrawApi) return ;
-
-    const position=getEmptyCanvasPosition();
-
-    const placeholderElements=convertToExcalidrawElements([
-      {
-        type:'rectangle',
-        id: AI_PLACEHOLDER_ID,
-        x: position.x,
-        y: position.y,
-        width:420,
-        height:250,
-        backgroundColor:'#f5f3ff',
-        strokeColor:'#8b5cf6',
-        fillStyle:"solid",
-        strokeWidth: 2,
-        roughness: 0,
-        roundness: {
-          type: 3
-        }
-      },
-      {
-        type:"text",
-        x:position.x + 28,
-        y:position.y + 28,
-        text:"Generating with AI",
-        fontSize: 22,
-        strokeColor:'#6d28d9'
-      },
-      {
-        type:"text",
-        x:position.x + 28,
-        y:position.y + 65,
-        text: "Preparing your diagram...",
-        fontSize: 15,
-        strokeColor: "#6b7280"
-
-      }
-    ])
-    const currentElements = excalidrawApi.getSceneElements();
-
-    excalidrawApi.updateScene({
-      elements:[
-        ...currentElements,
-        ...placeholderElements
-      ]
-    })
-  }
-
   const onClickGenerate= async ()=>{
+    if (!excalidrawApi) return;
+
     console.log("userInput" + userInput);
     console.log("selectedTool" + selectedTool);
     setLoading(true);
     const currentAiTool=AiTools.find(tool=>tool.name == selectedTool);
 
-    const result = await axios.post('/api/ai', {
-      userInput: userInput,
-      type: currentAiTool?.name,
-      systemPrompt: currentAiTool?.prompt
-    });
+    try {
+      const result = await axios.post('/api/ai', {
+        userInput: userInput,
+        type: currentAiTool?.name,
+        systemPrompt: currentAiTool?.prompt
+      });
 
-    console.log(result.data);
+      const responseData: unknown = result.data;
+      if (
+        typeof responseData !== 'object'
+        || responseData === null
+        || !('result' in responseData)
+        || typeof responseData.result !== 'string'
+        || responseData.result.trim().length === 0
+      ) {
+        throw new Error('Invalid AI response');
+      }
 
-    addAiPlaceholder();
-    setLoading(false);
+      const parsedElements: unknown = JSON.parse(responseData.result);
+      if (
+        !Array.isArray(parsedElements)
+        || parsedElements.length === 0
+        || !parsedElements.every((element) => {
+          if (typeof element !== 'object' || element === null) return false;
+
+          const candidate = element as Record<string, unknown>;
+          return typeof candidate.type === 'string'
+            && typeof candidate.x === 'number'
+            && Number.isFinite(candidate.x)
+            && typeof candidate.y === 'number'
+            && Number.isFinite(candidate.y)
+            && (candidate.type !== 'text' || typeof candidate.text === 'string');
+        })
+      ) {
+        throw new Error('AI response did not contain valid Excalidraw elements');
+      }
+
+      const elements = parsedElements as Array<{
+        type: string
+        x: number
+        y: number
+        [key: string]: unknown
+      }>;
+      const position = getEmptyCanvasPosition();
+      const minX = Math.min(...elements.map((element) => element.x));
+      const minY = Math.min(...elements.map((element) => element.y));
+      const positionedElements = elements.map((element) => ({
+        ...element,
+        x: element.x + position.x - minX,
+        y: element.y + position.y - minY
+      }));
+      const generatedElements = convertToExcalidrawElements(
+        positionedElements as NonNullable<Parameters<typeof convertToExcalidrawElements>[0]>,
+        { regenerateIds: true }
+      );
+
+      excalidrawApi.updateScene({
+        elements: [...excalidrawApi.getSceneElements(), ...generatedElements]
+      });
+    } catch (error) {
+      console.error('Failed to generate AI content', error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
