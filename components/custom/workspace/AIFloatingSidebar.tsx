@@ -2,6 +2,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@base-ui/react'
 import { convertToExcalidrawElements } from '@excalidraw/excalidraw'
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
+import axios from 'axios'
 import {
   Monitor,
   Network,
@@ -10,7 +11,8 @@ import {
   Sparkles,
   Workflow,
   X,
-  ArrowUp
+  ArrowUp,
+  Loader2Icon
 } from 'lucide-react'
 import React, { useState } from 'react'
 
@@ -19,16 +21,32 @@ type Props={
   onDismiss: () => void
 }
 
-function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
-  const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
-  const AI_PLACEHOLDER_ID ='ai-generation-placeholder';
-  const AiTools = [
+const AiTools = [
     {
       name: 'Generate Diagram',
       desc: 'Create a visual diagram from an idea',
       icon: PencilRuler,
       iconColor: 'text-blue-600',
       iconBg: 'bg-blue-50',
+      prompt: `
+      You are an expert visual diagram generation agent.
+      Your task is to convert the user's idea into a clear, structured, professional diagram.
+      Instructions:
+      - Understand the user's intent before generating.
+      - Identify the main entities, concepts, steps, and relationships.
+      - Create a clean virtual hierarchy.
+      - Use rectangle for main concepts or processes.
+      - Use diamonds only for dicussions.
+      - Use arrows to show relationships or direction.
+      - Keep labels short and readable.
+      - Avoid overlapping elements.
+      - Maintain consistent spacing between elements.
+      - Organize the diagram from left-to-right or top-to-bottom depending on which is easiest to understand.
+      - Add groups or sections when the diagram contains multiple categories. 
+      - Prefer simple layout over overly complex diagrams.
+      - Output only valid Excalidraw-compatible JSON elements.
+      - Do not include markdown, explanation, or additional texts outside the JSON.
+      `
     },
     {
       name: 'Flowchart',
@@ -36,6 +54,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Workflow,
       iconColor: 'text-purple-600',
       iconBg: 'bg-purple-50',
+      prompt: ``
     },
     {
       name: 'Architecture',
@@ -43,6 +62,18 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Network,
       iconColor: 'text-orange-600',
       iconBg: 'bg-orange-50',
+      prompt: `
+      You are a senior software architect and system design visualization agent.
+      Convert the user's application or system description into a clear architecture diagram.
+      Instructions:
+      - Identify clients, frontend applications, backend services, APIs, databases, queues, storage and infrastructure.
+      - Group related components into logical sections.
+      - Show the direction of data flow using arrows.
+      - Clearly label important connections when useful.
+      - Place users or client applications on the left or top.
+      - Place application services in the center.
+      - Place databases, storage and infrastructure on the right or bottom.
+      `
     },
     {
       name: 'Web Mockup',
@@ -50,6 +81,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Monitor,
       iconColor: 'text-cyan-600',
       iconBg: 'bg-cyan-50',
+      prompt: ``
     },
     {
       name: 'Mobile Mockup',
@@ -57,8 +89,14 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Smartphone,
       iconColor: 'text-pink-600',
       iconBg: 'bg-pink-50',
+      prompt: ``
     },
   ]
+
+function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
+  const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
+  const [userInput, setUserInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const getEmptyCanvasPosition = () =>{
     if(!excalidrawApi)
@@ -82,58 +120,78 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     }
   }
 
-  const addAiPlaceholder =() =>{
-    if(!excalidrawApi) return ;
+  const onClickGenerate= async ()=>{
+    if (!excalidrawApi) return;
 
-    const position=getEmptyCanvasPosition();
+    console.log("userInput" + userInput);
+    console.log("selectedTool" + selectedTool);
+    setLoading(true);
+    const currentAiTool=AiTools.find(tool=>tool.name == selectedTool);
 
-    const placeholderElements=convertToExcalidrawElements([
-      {
-        type:'rectangle',
-        id: AI_PLACEHOLDER_ID,
-        x: position.x,
-        y: position.y,
-        width:420,
-        height:250,
-        backgroundColor:'#f5f3ff',
-        strokeColor:'#8b5cf6',
-        fillStyle:"solid",
-        strokeWidth: 2,
-        roughness: 0,
-        roundness: {
-          type: 3
-        }
-      },
-      {
-        type:"text",
-        x:position.x + 28,
-        y:position.y + 28,
-        text:"Generating with AI",
-        fontSize: 22,
-        strokeColor:'#6d28d9'
-      },
-      {
-        type:"text",
-        x:position.x + 28,
-        y:position.y + 65,
-        text: "Preparing your diagram...",
-        fontSize: 15,
-        strokeColor: "#6b7280"
+    try {
+      const result = await axios.post('/api/ai', {
+        userInput: userInput,
+        type: currentAiTool?.name,
+        systemPrompt: currentAiTool?.prompt
+      });
 
+      const responseData: unknown = result.data;
+      if (
+        typeof responseData !== 'object'
+        || responseData === null
+        || !('result' in responseData)
+        || typeof responseData.result !== 'string'
+        || responseData.result.trim().length === 0
+      ) {
+        throw new Error('Invalid AI response');
       }
-    ])
-    const currentElements = excalidrawApi.getSceneElements();
 
-    excalidrawApi.updateScene({
-      elements:[
-        ...currentElements,
-        ...placeholderElements
-      ]
-    })
-  }
+      const parsedElements: unknown = JSON.parse(responseData.result);
+      if (
+        !Array.isArray(parsedElements)
+        || parsedElements.length === 0
+        || !parsedElements.every((element) => {
+          if (typeof element !== 'object' || element === null) return false;
 
-  const onClickGenerate=()=>{
-    addAiPlaceholder();
+          const candidate = element as Record<string, unknown>;
+          return typeof candidate.type === 'string'
+            && typeof candidate.x === 'number'
+            && Number.isFinite(candidate.x)
+            && typeof candidate.y === 'number'
+            && Number.isFinite(candidate.y)
+            && (candidate.type !== 'text' || typeof candidate.text === 'string');
+        })
+      ) {
+        throw new Error('AI response did not contain valid Excalidraw elements');
+      }
+
+      const elements = parsedElements as Array<{
+        type: string
+        x: number
+        y: number
+        [key: string]: unknown
+      }>;
+      const position = getEmptyCanvasPosition();
+      const minX = Math.min(...elements.map((element) => element.x));
+      const minY = Math.min(...elements.map((element) => element.y));
+      const positionedElements = elements.map((element) => ({
+        ...element,
+        x: element.x + position.x - minX,
+        y: element.y + position.y - minY
+      }));
+      const generatedElements = convertToExcalidrawElements(
+        positionedElements as NonNullable<Parameters<typeof convertToExcalidrawElements>[0]>,
+        { regenerateIds: true }
+      );
+
+      excalidrawApi.updateScene({
+        elements: [...excalidrawApi.getSceneElements(), ...generatedElements]
+      });
+    } catch (error) {
+      console.error('Failed to generate AI content', error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -204,13 +262,15 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          {AiTools.map((tool, index) => {
+        <div className="grid grid-cols-2 gap-2.5">
+          {AiTools.map((tool) => {
             const Icon = tool.icon
+            const isSelected = selectedTool === tool.name
 
             return (
               <button
-                key={index}
+                key={tool.name}
+                onClick={() => setSelectedTool(tool.name)}
                 className="
                   group
                   flex items-start gap-2.5
@@ -237,7 +297,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
                     group-hover:scale-105
                   `}
                 >
-                  <Icon size={16} />
+                  <Icon size={18} />
                 </div>
 
                 <div className="min-w-0">
@@ -280,7 +340,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
           "
         >
           <Textarea
-            placeholder="E.g. Customer onboarding flow with decision points..."
+            placeholder="E.g. Create a customer onboarding flow with decision points..."
             className="
               min-h-90px
               resize-none
@@ -291,6 +351,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
               shadow-none
               focus-visible:ring-0
             "
+            onChange={(event)=>setUserInput(event.target.value)}
           />
 
           <Button
@@ -309,8 +370,9 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
               hover:bg-gray-800
               disabled:opacity-50
             "
+            disabled={loading}
             onClick={onClickGenerate}
-          > Generate
+          > {loading && <Loader2Icon className='animate-spin'/>} Generate
             <ArrowUp size={14} />
           </Button>
         </div>
@@ -329,4 +391,4 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
   )
 }
 
-export default AIFloatingSidebar
+export default AIFloatingSidebar;
