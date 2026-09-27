@@ -2,6 +2,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@base-ui/react'
 import { convertToExcalidrawElements } from '@excalidraw/excalidraw'
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
+import axios from 'axios'
 import {
   Monitor,
   Network,
@@ -10,7 +11,8 @@ import {
   Sparkles,
   Workflow,
   X,
-  ArrowUp
+  ArrowUp,
+  Loader2Icon
 } from 'lucide-react'
 import React, { useState } from 'react'
 
@@ -19,16 +21,32 @@ type Props={
   onDismiss: () => void
 }
 
-function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
-  const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
-  const AI_PLACEHOLDER_ID ='ai-generation-placeholder';
-  const AiTools = [
+const AiTools = [
     {
       name: 'Generate Diagram',
       desc: 'Create a visual diagram from an idea',
       icon: PencilRuler,
       iconColor: 'text-blue-600',
       iconBg: 'bg-blue-50',
+      prompt: `
+      You are an expert visual diagram generation agent.
+      Your task is to convert the user's idea into a clear, structured, professional diagram.
+      Instructions:
+      - Understand the user's intent before generating.
+      - Identify the main entities, concepts, steps, and relationships.
+      - Create a clean virtual hierarchy.
+      - Use rectangle for main concepts or processes.
+      - Use diamonds only for dicussions.
+      - Use arrows to show relationships or direction.
+      - Keep labels short and readable.
+      - Avoid overlapping elements.
+      - Maintain consistent spacing between elements.
+      - Organize the diagram from left-to-right or top-to-bottom depending on which is easiest to understand.
+      - Add groups or sections when the diagram contains multiple categories. 
+      - Prefer simple layout over overly complex diagrams.
+      - Output only valid Excalidraw-compatible JSON elements.
+      - Do not include markdown, explanation, or additional texts outside the JSON.
+      `
     },
     {
       name: 'Flowchart',
@@ -36,6 +54,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Workflow,
       iconColor: 'text-purple-600',
       iconBg: 'bg-purple-50',
+      prompt: ``
     },
     {
       name: 'Architecture',
@@ -43,6 +62,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Network,
       iconColor: 'text-orange-600',
       iconBg: 'bg-orange-50',
+      prompt: ``
     },
     {
       name: 'Web Mockup',
@@ -50,6 +70,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Monitor,
       iconColor: 'text-cyan-600',
       iconBg: 'bg-cyan-50',
+      prompt: ``
     },
     {
       name: 'Mobile Mockup',
@@ -57,8 +78,15 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       icon: Smartphone,
       iconColor: 'text-pink-600',
       iconBg: 'bg-pink-50',
+      prompt: ``
     },
   ]
+
+function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
+  const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
+  const AI_PLACEHOLDER_ID ='ai-generation-placeholder';
+  const [userInput, setUserInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const getEmptyCanvasPosition = () =>{
     if(!excalidrawApi)
@@ -132,8 +160,22 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     })
   }
 
-  const onClickGenerate=()=>{
+  const onClickGenerate= async ()=>{
+    console.log("userInput" + userInput);
+    console.log("selectedTool" + selectedTool);
+    setLoading(true);
+    const currentAiTool=AiTools.find(tool=>tool.name == selectedTool);
+
+    const result = await axios.post('/api/ai', {
+      userInput: userInput,
+      type: currentAiTool?.name,
+      systemPrompt: currentAiTool?.prompt
+    });
+
+    console.log(result.data);
+
     addAiPlaceholder();
+    setLoading(false);
   }
 
   return (
@@ -204,13 +246,15 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          {AiTools.map((tool, index) => {
+        <div className="grid grid-cols-2 gap-2.5">
+          {AiTools.map((tool) => {
             const Icon = tool.icon
+            const isSelected = selectedTool === tool.name
 
             return (
               <button
-                key={index}
+                key={tool.name}
+                onClick={() => setSelectedTool(tool.name)}
                 className="
                   group
                   flex items-start gap-2.5
@@ -237,7 +281,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
                     group-hover:scale-105
                   `}
                 >
-                  <Icon size={16} />
+                  <Icon size={18} />
                 </div>
 
                 <div className="min-w-0">
@@ -280,7 +324,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
           "
         >
           <Textarea
-            placeholder="E.g. Customer onboarding flow with decision points..."
+            placeholder="E.g. Create a customer onboarding flow with decision points..."
             className="
               min-h-90px
               resize-none
@@ -291,6 +335,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
               shadow-none
               focus-visible:ring-0
             "
+            onChange={(event)=>setUserInput(event.target.value)}
           />
 
           <Button
@@ -309,8 +354,9 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
               hover:bg-gray-800
               disabled:opacity-50
             "
+            disabled={loading}
             onClick={onClickGenerate}
-          > Generate
+          > {loading && <Loader2Icon className='animate-spin'/>} Generate
             <ArrowUp size={14} />
           </Button>
         </div>
@@ -329,4 +375,4 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
   )
 }
 
-export default AIFloatingSidebar
+export default AIFloatingSidebar;
