@@ -39,26 +39,40 @@ export async function POST(req:NextRequest) {
         config: {
             responseMimeType:'application/json',
             responseSchema: {
-                type: Type.OBJECT,
-                properties: {
-                    title: {
-                        type: Type.STRING
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        id: {
+                            type: Type.STRING
+                        },
+                        type: {
+                            type: Type.STRING
+                        },
+                        x: {
+                            type: Type.NUMBER
+                        },
+                        y: {
+                            type: Type.NUMBER
+                        },
+                        width: {
+                            type: Type.NUMBER
+                        },
+                        height: {
+                            type: Type.NUMBER
+                        },
+                        text: {
+                            type: Type.STRING
+                        }
                     },
-                    width: {
-                        type: Type.NUMBER
-                    },
-                    height: {
-                        type: Type.NUMBER
-                    }
+                    required: ['type', 'x', 'y']
                 }
             }
         },
     });
 
-    const diagramResult =JSON.parse( response.text || '{}');
-
     return Response.json({
         success: true,
-        diagramResult
+        result: response.text || '[]'
     })
 }
