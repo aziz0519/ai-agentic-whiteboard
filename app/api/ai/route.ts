@@ -33,7 +33,7 @@ export async function POST(req:NextRequest) {
     Do not include markdown.
     `
 
-    const generatedResult = await ai.models.generateContent({
+    const response = await ai.models.generateContent({
         model: 'gemini-3.7-flash',
         contents: userInput,
         config: {
@@ -55,5 +55,10 @@ export async function POST(req:NextRequest) {
         },
     });
 
-    return Response.json({ result: generatedResult.text });
+    const diagramResult =JSON.parse( response.text || '{}');
+
+    return Response.json({
+        success: true,
+        diagramResult
+    })
 }
