@@ -143,18 +143,8 @@ const AiTools = [
     },
   ]
 
-const AI_PLACEHOLDER_IDS = {
-  container: "ai-placeholder-container",
-  title: "ai-placeholder-title",
-  subtitle: "ai-placeholder-subtitle",
-  skeleton1: "ai-placeholder-skeleton1",
-  skeleton2: "ai-placeholder-skeleton2",
-  skeleton3: "ai-placeholder-skeleton3",
-}
-
 function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
   const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
-  const AI_PLACEHOLDER_ID = 'ai-generation-placeholder';
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -180,8 +170,8 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     }
   }
 
-  const addAiPlaceholder = ()=>{
-    if(!excalidrawApi) return;
+  const addAiPlaceholder = () => {
+    if (!excalidrawApi) return [];
 
     const position = getEmptyCanvasPosition();
 
@@ -189,7 +179,6 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       convertToExcalidrawElements([
         {
           type: 'rectangle',
-          id: AI_PLACEHOLDER_ID,
           x: position.x,
           y: position.y,
           width:42,
@@ -212,6 +201,8 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
           ...placeHolderElements
         ]
       })
+
+      return placeHolderElements.map(element => element.id);
   }
 
   const onClickGenerate= async ()=>{
@@ -220,6 +211,7 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     console.log("userInput" + userInput);
     console.log("selectedTool" + selectedTool);
     setLoading(true);
+    const placeholderIds = addAiPlaceholder();
     const currentAiTool=AiTools.find(tool=>tool.name == selectedTool);
 
     try {
@@ -284,22 +276,19 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     } catch (error) {
       console.error('Failed to generate AI content', error);
     } finally {
-      addAiPlaceholder();
       setLoading(false);
-      removeAiPlaceholder();
+      removeAiPlaceholder(placeholderIds);
     }
   }
 
-  const removeAiPlaceholder = () => {
-    if(!excalidrawApi) return;
+  const removeAiPlaceholder = (placeholderIds: string[]) => {
+    if (!excalidrawApi || placeholderIds.length === 0) return;
 
-    const placeholderIds =Object.values(AI_PLACEHOLDER_IDS);
-    
     const elements = excalidrawApi.getSceneElements();
 
-    const updateElements = elements.filter(elements=>!placeholderIds.includes(elements.id));
+    const updateElements = elements.filter(element => !placeholderIds.includes(element.id));
 
-    excalidrawApi.updateScene({elements:updateElements});
+    excalidrawApi.updateScene({ elements: updateElements });
   }
 
   return (
