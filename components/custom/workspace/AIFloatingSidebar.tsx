@@ -143,8 +143,18 @@ const AiTools = [
     },
   ]
 
+const AI_PLACEHOLDER_IDS = {
+  container: "ai-placeholder-container",
+  title: "ai-placeholder-title",
+  subtitle: "ai-placeholder-subtitle",
+  skeleton1: "ai-placeholder-skeleton1",
+  skeleton2: "ai-placeholder-skeleton2",
+  skeleton3: "ai-placeholder-skeleton3",
+}
+
 function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
   const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
+  const AI_PLACEHOLDER_ID = 'ai-generation-placeholder';
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -168,6 +178,40 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       x:maxRight + 150,
       y:minTop
     }
+  }
+
+  const addAiPlaceholder = ()=>{
+    if(!excalidrawApi) return;
+
+    const position = getEmptyCanvasPosition();
+
+    const placeHolderElements = 
+      convertToExcalidrawElements([
+        {
+          type: 'rectangle',
+          id: AI_PLACEHOLDER_ID,
+          x: position.x,
+          y: position.y,
+          width:42,
+          height: 250,
+          backgroundColor: "#f5f3ff",
+          strokeColor: "#8b5cf6",
+          fillStyle: "solid",
+          strokeWidth: 2,
+          roughness: 0,
+          roundness: {
+            type: 3
+          }
+        }
+      ])
+      const currentElements = excalidrawApi.getSceneElements();
+
+      excalidrawApi.updateScene({
+        elements: [
+          ...currentElements,
+          ...placeHolderElements
+        ]
+      })
   }
 
   const onClickGenerate= async ()=>{
@@ -240,8 +284,22 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     } catch (error) {
       console.error('Failed to generate AI content', error);
     } finally {
+      addAiPlaceholder();
       setLoading(false);
+      removeAiPlaceholder();
     }
+  }
+
+  const removeAiPlaceholder = () => {
+    if(!excalidrawApi) return;
+
+    const placeholderIds =Object.values(AI_PLACEHOLDER_IDS);
+    
+    const elements = excalidrawApi.getSceneElements();
+
+    const updateElements = elements.filter(elements=>!placeholderIds.includes(elements.id));
+
+    excalidrawApi.updateScene({elements:updateElements});
   }
 
   return (
