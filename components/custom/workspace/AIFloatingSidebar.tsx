@@ -170,12 +170,48 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
     }
   }
 
+  const addAiPlaceholder = () => {
+    if (!excalidrawApi) return [];
+
+    const position = getEmptyCanvasPosition();
+
+    const placeHolderElements = 
+      convertToExcalidrawElements([
+        {
+          type: 'rectangle',
+          x: position.x,
+          y: position.y,
+          width:42,
+          height: 250,
+          backgroundColor: "#f5f3ff",
+          strokeColor: "#8b5cf6",
+          fillStyle: "solid",
+          strokeWidth: 2,
+          roughness: 0,
+          roundness: {
+            type: 3
+          }
+        }
+      ])
+      const currentElements = excalidrawApi.getSceneElements();
+
+      excalidrawApi.updateScene({
+        elements: [
+          ...currentElements,
+          ...placeHolderElements
+        ]
+      })
+
+      return placeHolderElements.map(element => element.id);
+  }
+
   const onClickGenerate= async ()=>{
     if (!excalidrawApi) return;
 
     console.log("userInput" + userInput);
     console.log("selectedTool" + selectedTool);
     setLoading(true);
+    const placeholderIds = addAiPlaceholder();
     const currentAiTool=AiTools.find(tool=>tool.name == selectedTool);
 
     try {
@@ -241,7 +277,18 @@ function AIFloatingSidebar({excalidrawApi, onDismiss}:Props) {
       console.error('Failed to generate AI content', error);
     } finally {
       setLoading(false);
+      removeAiPlaceholder(placeholderIds);
     }
+  }
+
+  const removeAiPlaceholder = (placeholderIds: string[]) => {
+    if (!excalidrawApi || placeholderIds.length === 0) return;
+
+    const elements = excalidrawApi.getSceneElements();
+
+    const updateElements = elements.filter(element => !placeholderIds.includes(element.id));
+
+    excalidrawApi.updateScene({ elements: updateElements });
   }
 
   return (
