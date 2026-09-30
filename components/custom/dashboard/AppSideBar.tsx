@@ -15,6 +15,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import CreateNewBoardDialog from "./CreateNewBoardDialog"
+import { useContext } from "react"
+import { UserDetailContext } from "@/context/UserDetailContext"
 
 
  
@@ -22,6 +24,8 @@ export function AppSidebar() {
 
   const path = usePathname();
   const {user}= useUser();
+  const { userDetail, setUserDetail } = useContext(UserDetailContext);
+  const totalMaxCredits = 3;
 
   return (
     <Sidebar>
@@ -70,8 +74,8 @@ export function AppSidebar() {
       <SidebarFooter>
         <CreateNewBoardDialog />
         <div className="p-4 my-3 border rounded-md">
-            <h2 className="text-sm flex justify-between mb-1">2 files created</h2>
-            <Progress value={66} className="h-2 mt-2" />
+            <h2 className="text-sm flex justify-between mb-1">{totalMaxCredits - userDetail?.credits} files created <span>Total {totalMaxCredits}</span></h2>
+            <Progress value={((totalMaxCredits - userDetail?.credits) / totalMaxCredits) * 100} className="h-2 mt-2" />
         </div>
         <div className="flex items-center gap-2 p-4 border rounded-md">
             {user?.imageUrl && (
