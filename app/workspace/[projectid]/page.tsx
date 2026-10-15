@@ -37,7 +37,7 @@ function Workspace() {
   return (
     <div>
         <WorkspaceHeader selectedTab={(value:string) => setActiveTab(value)} 
-         onExport={()=>console.log("Export")}/>
+         onExport={handleExportImage}/>
           {activeTab == "whiteboard" ? <Whiteboard onApiReady={(api)=>setApi(api)}/>:<SmartDoc/> }
     </div>
   )
