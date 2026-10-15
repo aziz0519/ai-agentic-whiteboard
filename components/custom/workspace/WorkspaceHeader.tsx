@@ -1,15 +1,16 @@
 "use client"
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Share } from 'lucide-react';
+import { DownloadIcon, Save, Share } from 'lucide-react';
 import Image from 'next/image'
 import React from 'react'
 
 type Props = {
     selectedTab:any
+    onExport: any
 }
 
-function WorkspaceHeader({ selectedTab }: Props) {
+function WorkspaceHeader({ selectedTab, onExport}: Props) {
   return (
     <div className='p-3 border-b flex justify-between'>
         <div className='flex gap-2 items-center'>
@@ -29,6 +30,7 @@ function WorkspaceHeader({ selectedTab }: Props) {
         <div className='flex gap-2'>
             <Button><Save/>Save</Button>
             <Button variant={'outline'}><Share/>Share</Button>
+            <Button onClick={onExport}><DownloadIcon/>Export</Button>
         </div>
     </div>
   )

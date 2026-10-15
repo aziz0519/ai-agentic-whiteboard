@@ -83,7 +83,11 @@ const Excalidraw = dynamic(
  * Renders the Excalidraw canvas with tool selection, debounced persistence,
  * and a contextual toolbar for a single selected element.
  */
-function Whiteboard() {
+
+type Props={
+  onApiReady:(api:ExcalidrawImperativeAPI)=>void
+}
+function Whiteboard({onApiReady}: Props) {
 
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI|null>(null);
   const saveTimeRef=useRef<any>(null);
@@ -300,7 +304,7 @@ function Whiteboard() {
     <div style={{height: "90vh"}}>
       <Excalidraw
       //@ts-ignore
-      excalidrawAPI={(api)=>setExcalidrawAPI(api)} 
+      excalidrawAPI={(api)=>{setExcalidrawAPI(api);onAPIReady(api)}} 
       onChange={handleCanvasChange} />
       <div className='absolute left-4 top-1/2 z-50 -translate-1/2 
       flex flex-col gap-1 rounded-2xl bg-white border p-1.5 shadow-xl'>
